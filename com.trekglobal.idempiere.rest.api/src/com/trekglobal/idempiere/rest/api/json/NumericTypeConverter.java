@@ -29,7 +29,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.MColumn;
 import org.compiere.util.DisplayType;
 import static org.compiere.util.DisplayType.Button;
-import static org.compiere.util.DisplayType.RecordID;
+
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -41,6 +41,8 @@ import com.google.gson.JsonPrimitive;
  *
  */
 public class NumericTypeConverter implements ITypeConverter<Number> {
+	
+	public final static int RecordID = 200202; // from idempiere release 10
 
 	/**
 	 * 

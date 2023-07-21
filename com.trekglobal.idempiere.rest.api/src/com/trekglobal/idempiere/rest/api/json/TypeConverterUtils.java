@@ -33,7 +33,7 @@ import static org.compiere.util.DisplayType.Locator;
 import static org.compiere.util.DisplayType.PAttribute;
 import static org.compiere.util.DisplayType.Payment;
 import static org.compiere.util.DisplayType.Button;
-import static org.compiere.util.DisplayType.RecordID;
+
 
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
@@ -59,6 +59,7 @@ public class TypeConverterUtils {
 
 	private static final Pattern NONLATIN = Pattern.compile("[^\\w_-]");  
 	private static final Pattern SEPARATORS = Pattern.compile("[\\s\\p{Punct}&&[^-]&&[^_]]");
+	public final static int RecordID = 200202;
 	
 	/**
 	 * private constructor
