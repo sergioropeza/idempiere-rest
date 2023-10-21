@@ -34,6 +34,7 @@ import org.compiere.model.MTable;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+import org.compiere.model.Query;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -60,6 +61,9 @@ public class DefaultPOSerializer implements IPOSerializer, IPOSerializerFactory 
 
 	@Override
 	public JsonObject toJson(PO po, String[] includes, String[] excludes) {
+		po = new Query(Env.getCtx(), po.get_TableName(), po.get_TableName()+"_ID = ?",po.get_TrxName()).
+				setParameters(po.get_ID()).first(); //Reload PO
+				
 		JsonObject json = new JsonObject();
 		String[] keyColumns = po.get_KeyColumns();
 		String keyColumn = null;
@@ -77,6 +81,8 @@ public class DefaultPOSerializer implements IPOSerializer, IPOSerializerFactory 
 		POInfo poInfo = POInfo.getPOInfo(Env.getCtx(), po.get_Table_ID());
 		for(int i=0;i < poInfo.getColumnCount(); i++) {
 			String columnName = poInfo.getColumnName(i);
+			if (columnName.equals("NotificationMessage"))
+				System.out.println("psp");
 			if (keyColumn != null && keyColumn.equalsIgnoreCase(columnName))
 				continue;
 			if (uidColumn != null && uidColumn.equalsIgnoreCase(columnName))
@@ -92,7 +98,7 @@ public class DefaultPOSerializer implements IPOSerializer, IPOSerializerFactory 
 			Object value ;
 			if (column.isTranslated())
 				value = po.get_Translation(column.getColumnName());
-			else
+			else 
 				value = po.get_Value(i);
 
 			if (value != null) {
@@ -124,6 +130,8 @@ public class DefaultPOSerializer implements IPOSerializer, IPOSerializerFactory 
 		Set<String> jsonFields = json.keySet();
 		for(int i = 0; i < poInfo.getColumnCount(); i++) {
 			String columnName = poInfo.getColumnName(i);
+			if (columnName.equals("NotificationMessage") || columnName.equals("Area") )
+				System.out.println("psp");
 			MColumn column = table.getColumn(columnName);
 			String propertyName = TypeConverterUtils.toPropertyName(columnName);
 			if (!jsonFields.contains(propertyName) && !jsonFields.contains(columnName)) {
