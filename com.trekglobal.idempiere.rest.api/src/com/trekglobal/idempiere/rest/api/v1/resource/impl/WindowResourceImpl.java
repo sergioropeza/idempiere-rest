@@ -74,7 +74,6 @@ import com.trekglobal.idempiere.rest.api.json.IDempiereRestException;
 import com.trekglobal.idempiere.rest.api.json.IGridTabSerializer;
 import com.trekglobal.idempiere.rest.api.json.IPOSerializer;
 import com.trekglobal.idempiere.rest.api.json.Process;
-import com.trekglobal.idempiere.rest.api.json.ResponseUtils;
 import com.trekglobal.idempiere.rest.api.json.RestUtils;
 import com.trekglobal.idempiere.rest.api.json.TypeConverterUtils;
 import com.trekglobal.idempiere.rest.api.json.filter.ConvertedQuery;
@@ -280,10 +279,9 @@ public class WindowResourceImpl implements WindowResource {
 				whereClause.append(" AND (").append(convertedStatement.getWhereClause()).append(")");
 			}
 			query = new Query(Env.getCtx(), MField.Table_Name, whereClause.toString(), null);
-			List<Object> prmCopy = new ArrayList<>(convertedStatement.getParameters());
-			prmCopy.add(0, tabId);
-
-			List<MField> fields = query.setParameters(prmCopy).list();
+			convertedStatement.addParameter(0, tabId);
+			
+			List<MField> fields = query.setParameters(convertedStatement.getParameters()).list();
 			JsonArray fieldArray = new JsonArray();
 			IPOSerializer serializer = IPOSerializer.getPOSerializer(MField.Table_Name, MTable.getClass(MField.Table_Name));
 			for(MField field : fields ) {
@@ -1290,23 +1288,20 @@ public class WindowResourceImpl implements WindowResource {
 			query.setApplyAccessFilter(false);
 			window = query.first();
 			if (window != null) {
-				return ResponseUtils.getResponseError(Status.FORBIDDEN, 
-						"Access denied", 
-						"Access denied for window: ", 
-						windowSlug);
+				return Response.status(Status.FORBIDDEN)
+						.entity(new ErrorBuilder().status(Status.FORBIDDEN).title("Access denied").append("Access denied for window: ").append(windowSlug).build().toString())
+						.build();
 			} else {
-				return ResponseUtils.getResponseError(Status.NOT_FOUND, 
-						"Invalid window name", 
-						"No match found for window name: ", 
-						windowSlug);
+				return Response.status(Status.NOT_FOUND)
+						.entity(new ErrorBuilder().status(Status.NOT_FOUND).title("Invalid window name").append("No match found for window name: ").append(windowSlug).build().toString())
+						.build();
 			}
 		}
 		
 		if (role.getWindowAccess(window.getAD_Window_ID()) == null) {
-			return ResponseUtils.getResponseError(Status.FORBIDDEN, 
-					"Access denied", 
-					"Access denied for window: ", 
-					windowSlug);
+			return Response.status(Status.FORBIDDEN)
+					.entity(new ErrorBuilder().status(Status.FORBIDDEN).title("Access denied").append("Access denied for window: ").append(windowSlug).build().toString())
+					.build();
 		}
 		
 		GridWindow gridWindow = GridWindow.get(Env.getCtx(), 1, window.getAD_Window_ID());
@@ -1326,26 +1321,23 @@ public class WindowResourceImpl implements WindowResource {
 		}
 		
 		if (headerTab == null)
-			return ResponseUtils.getResponseError(Status.NOT_FOUND, 
-					"Invalid tab name", 
-					"No match found for tab name: ", 
-					tabSlug);
+			return Response.status(Status.NOT_FOUND)
+					.entity(new ErrorBuilder().status(Status.NOT_FOUND).title("Invalid tab name").append("No match found for tab name: ").append(tabSlug).build().toString())
+					.build();
 		
 		int AD_Process_ID = headerTab.getAD_Process_ID();
 		if (AD_Process_ID == 0)
-			return ResponseUtils.getResponseError(Status.NOT_FOUND, 
-					"No print process", 
-					"No print process have been defined for ", 
-					tabSlug==null?"window":"tab");
+			return Response.status(Status.NO_CONTENT)
+					.entity(new ErrorBuilder().status(Status.NO_CONTENT).title("No print process").append("No print process have been defined for ").append(tabSlug==null?"window":"tab"))
+					.build();
 		
 		JsonObject jsonObject = loadTabRecord(window, tabSlug, recordId, null);
 		
 		if (jsonObject == null)
-			return ResponseUtils.getResponseError(Status.NOT_FOUND, 
-					"Record not found", 
-					"No record found matching id ", 
-					String.valueOf(recordId));
-					
+			return Response.status(Status.NOT_FOUND)
+					.entity(new ErrorBuilder().status(Status.NOT_FOUND).title("Record not found").append("No record found matching id ").append(recordId).build().toString())
+					.build();
+		
 		MProcess process = MProcess.get(Env.getCtx(), AD_Process_ID);
 		MPInstance pinstance = Process.createPInstance(process, new JsonObject(), false);
 		JsonObject processConfig = new JsonObject();

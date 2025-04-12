@@ -28,8 +28,6 @@ package com.trekglobal.idempiere.rest.api.v1.jwt;
 import java.sql.Timestamp;
 
 import org.adempiere.base.Service;
-import org.compiere.model.MSysConfig;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 /**
@@ -51,10 +49,6 @@ public class TokenUtils {
 		if (provider != null) {
 			return provider.getSecret();
 		}
-		
-		if(MSysConfig.getBooleanValue("REST_USE_SYSCONFIG_SECRET", true))
-			return SysConfigTokenSecretProvider.instance.getSecret();
-		
 		return DefaultTokenSecretProvider.instance.getSecret();
 	}
 
@@ -88,20 +82,7 @@ public class TokenUtils {
 	 */
 	public static Timestamp getTokenExpiresAt() {
 		Timestamp expiresAt = new Timestamp(System.currentTimeMillis());
-		int expMinutes = MSysConfig.getIntValue("REST_TOKEN_EXPIRE_IN_MINUTES", 60, Env.getAD_Client_ID(Env.getCtx()));
-		expiresAt = TimeUtil.addMinutess(expiresAt, expMinutes);
+		expiresAt = TimeUtil.addMinutess(expiresAt, 60);
 		return expiresAt;
 	}
-
-	/**
-	 * 
-	 * @return refresh token expire time stamp
-	 */
-	public static Timestamp getRefreshTokenExpiresAt() {
-		Timestamp expiresAt = new Timestamp(System.currentTimeMillis());
-		int expMinutes = MSysConfig.getIntValue("REST_REFRESH_TOKEN_EXPIRE_IN_MINUTES", 1440, Env.getAD_Client_ID(Env.getCtx()));
-		expiresAt = TimeUtil.addMinutess(expiresAt, expMinutes);
-		return expiresAt;
-	}
-
 }

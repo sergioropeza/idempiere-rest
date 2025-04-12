@@ -35,8 +35,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.trekglobal.idempiere.rest.api.json.QueryOperators;
-
 /**
  * 
  * @author hengsin
@@ -52,7 +50,7 @@ public interface ProcessResource {
 	 * @param filter
 	 * @return json array of process
 	 */
-	public Response getProcesses(@QueryParam(QueryOperators.FILTER) String filter);
+	public Response getProcesses(@QueryParam("$filter") String filter);
 	
 	@Path("{processSlug}")
 	@GET

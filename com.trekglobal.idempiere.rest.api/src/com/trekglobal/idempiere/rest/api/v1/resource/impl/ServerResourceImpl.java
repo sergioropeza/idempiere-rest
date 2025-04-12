@@ -70,10 +70,6 @@ public class ServerResourceImpl implements ServerResource {
 
 	@Override
 	public Response getServers() {
-		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return accessDenied("", "get servers");
-
 		IServerManager serverMgr = getServerManager();
 		ServerInstance[] instances = serverMgr.getServerInstances();
 		JsonArray servers = new JsonArray();
@@ -96,10 +92,6 @@ public class ServerResourceImpl implements ServerResource {
 
 	@Override
 	public Response getServer(String id) {
-		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return accessDenied(id, "get server");
-
 		IServerManager serverMgr = getServerManager();
 		ServerInstance instance = serverMgr.getServerInstance(id);
 		if (instance == null) {
@@ -133,10 +125,6 @@ public class ServerResourceImpl implements ServerResource {
 
 	@Override
 	public Response getServerLogs(String id) {
-		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return accessDenied(id, "get server logs");
-
 		IServerManager serverMgr = getServerManager();
 		ServerInstance instance = serverMgr.getServerInstance(id);
 		if (instance == null) {
@@ -271,9 +259,11 @@ public class ServerResourceImpl implements ServerResource {
 	@Override
 	public Response reloadServers() {
 		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return accessDenied("", "reload servers");
-
+		if (!user.isAdministrator()) {
+			return Response.status(Status.FORBIDDEN)
+					.entity(new ErrorBuilder().status(Status.FORBIDDEN).title("Access denied").append("Access denied for reload servers request").build().toString())
+					.build();
+		}
 		IServerManager serverMgr = getServerManager();
 		String error = serverMgr.reload();
 		if (!Util.isEmpty(error, true)) {
@@ -287,10 +277,6 @@ public class ServerResourceImpl implements ServerResource {
 
 	@Override
 	public Response getScheduler(int id) {
-		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return accessDenied(String.valueOf(id), "get scheduler");
-
 		if (id <= 0) {
 			return Response.status(Status.BAD_REQUEST)
 					.entity(new ErrorBuilder().status(Status.BAD_REQUEST).title("Invalid scheduler id").append("Invalid scheduler id: ").append(id).build().toString())

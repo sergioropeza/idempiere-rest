@@ -28,17 +28,12 @@ package com.trekglobal.idempiere.rest.api.v1.resource.impl;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
-import org.compiere.model.MRole;
-import org.compiere.model.MUser;
 import org.compiere.util.CacheInfo;
 import org.compiere.util.CacheMgt;
-import org.compiere.util.Env;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.trekglobal.idempiere.rest.api.util.ErrorBuilder;
 import com.trekglobal.idempiere.rest.api.v1.resource.CacheResource;
 
 /**
@@ -46,8 +41,6 @@ import com.trekglobal.idempiere.rest.api.v1.resource.CacheResource;
  *
  */
 public class CacheResourceImpl implements CacheResource {
-
-	public final static int PROCESS_CACHE_RESET = 205;
 
 	/**
 	 * default constructor
@@ -57,10 +50,6 @@ public class CacheResourceImpl implements CacheResource {
 
 	@Override
 	public Response getCaches(String tableName, String name) {
-		MUser user = MUser.get(Env.getCtx());
-		if (!user.isAdministrator())
-			return forbidden("Access denied", "Access denied for get caches request");
-
 		List<CacheInfo> cacheInfos = CacheInfo.getCacheInfos(true);
 		JsonArray caches = new JsonArray();
 		for(CacheInfo cacheInfo : cacheInfos) {
@@ -91,10 +80,6 @@ public class CacheResourceImpl implements CacheResource {
 
 	@Override
 	public Response resetCache(String tableName, int recordId) {
-		Boolean hasAccess = MRole.getDefault().getProcessAccess(PROCESS_CACHE_RESET);
-		if (hasAccess == null || !hasAccess)
-			return forbidden("Access denied", "Access denied for cache reset request");
-
 		int count = 0;
 		if (tableName == null) {
 			count = CacheMgt.get().reset();
@@ -105,13 +90,7 @@ public class CacheResourceImpl implements CacheResource {
 				count = CacheMgt.get().reset(tableName);
 			}
 		}
-		return Response.ok("{\"entriesReset\": " + count + "}").build();
-	}
-
-	private Response forbidden(String title, String detail) {
-		return Response.status(Status.FORBIDDEN)
-				.entity(new ErrorBuilder().status(Status.FORBIDDEN).title(title).append(detail).build().toString())
-				.build();
+		return Response.ok("{entriesReset: " + count + "}").build();
 	}
 
 }

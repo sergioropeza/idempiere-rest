@@ -25,10 +25,6 @@
 **********************************************************************/
 package com.trekglobal.idempiere.rest.api.json;
 
-import static org.compiere.util.DisplayType.Button;
-import static org.compiere.util.DisplayType.ID;
-import static org.compiere.util.DisplayType.RecordID;
-
 import org.compiere.model.GridField;
 import org.compiere.model.MColumn;
 import org.compiere.util.DisplayType;
@@ -71,10 +67,10 @@ public class NumericTypeConverter implements ITypeConverter<Number> {
 	}
 	
 	private Object toJsonValue(int displayType, Number value) {
-		if (!(DisplayType.isNumeric(displayType) || displayType == Button || displayType == RecordID || displayType == ID))
+		if (!DisplayType.isNumeric(displayType))
 			return null;
 		
-		if (displayType == DisplayType.Integer || displayType == RecordID || displayType == ID) {
+		if (displayType == DisplayType.Integer) {
 			return value.intValue();
 		} else {
 			return value;
@@ -82,11 +78,11 @@ public class NumericTypeConverter implements ITypeConverter<Number> {
 	}
 	
 	private Object fromJsonValue(int displayType, JsonElement value) {
-		if (!(DisplayType.isNumeric(displayType) || displayType == Button || displayType == RecordID || displayType == ID))
+		if (!DisplayType.isNumeric(displayType))
 			return null;
 		
 		JsonPrimitive primitive = (JsonPrimitive) value;
-		if (displayType == DisplayType.Integer || displayType == RecordID || displayType == ID) {
+		if (displayType == DisplayType.Integer) {
 			if (primitive.isString())
 				return Integer.parseInt(primitive.getAsString());
 			else

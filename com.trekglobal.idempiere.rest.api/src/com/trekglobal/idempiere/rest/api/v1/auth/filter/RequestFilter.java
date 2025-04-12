@@ -41,8 +41,6 @@ import org.adempiere.util.ServerContext;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClientInfo;
 import org.compiere.model.MRole;
-import org.compiere.model.MSession;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -52,8 +50,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.trekglobal.idempiere.rest.api.model.MAuthToken;
-import com.trekglobal.idempiere.rest.api.model.MRefreshToken;
 import com.trekglobal.idempiere.rest.api.v1.jwt.LoginClaims;
 import com.trekglobal.idempiere.rest.api.v1.jwt.TokenUtils;
 
@@ -82,12 +78,6 @@ public class RequestFilter implements ContainerRequestFilter {
 			|| (   HttpMethod.GET.equals(requestContext.getMethod())
 					&& requestContext.getUriInfo().getPath().endsWith("v1/auth/jwk")
 					)
-			|| (   HttpMethod.POST.equals(requestContext.getMethod())
-					&& requestContext.getUriInfo().getPath().endsWith("v1/auth/refresh")
-					)
-			|| (   HttpMethod.POST.equals(requestContext.getMethod())
-					&& requestContext.getUriInfo().getPath().endsWith("v1/auth/logout")
-					)
 			) {
 			return;
 		}
@@ -97,7 +87,7 @@ public class RequestFilter implements ContainerRequestFilter {
 		// consume JWT i.e. execute signature validation
 		if (authHeaderVal != null && authHeaderVal.startsWith("Bearer")) {
 			try {
-				validate(authHeaderVal.split(" ")[1], requestContext);
+				validate(authHeaderVal.split(" ")[1]);
 				if (Util.isEmpty(Env.getContext(Env.getCtx(), Env.AD_USER_ID)) ||
 					Util.isEmpty(Env.getContext(Env.getCtx(), Env.AD_ROLE_ID))) {
 					if (!requestContext.getUriInfo().getPath().startsWith("v1/auth/")) {
@@ -114,12 +104,7 @@ public class RequestFilter implements ContainerRequestFilter {
 		}
 	}
 
-	private void validate(String token, ContainerRequestContext requestContext) throws IllegalArgumentException, UnsupportedEncodingException {
-		
-		if(MAuthToken.isBlocked(token)) {
-			throw new JWTVerificationException("Token is blocked");
-		}
-		
+	private void validate(String token) throws IllegalArgumentException, UnsupportedEncodingException {
 		Algorithm algorithm = Algorithm.HMAC512(TokenUtils.getTokenSecret());
 		JWTVerifier verifier = JWT.require(algorithm)
 		        .withIssuer(TokenUtils.getTokenIssuer())
@@ -129,58 +114,46 @@ public class RequestFilter implements ContainerRequestFilter {
 		ServerContext.setCurrentInstance(new Properties());
 		Env.setContext(Env.getCtx(), LOGIN_NAME, userName);
 		Claim claim = jwt.getClaim(LoginClaims.Clients.name());
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			String clients = claim.asString();
 			Env.setContext(Env.getCtx(), LOGIN_CLIENTS, clients);
 		}
 		claim = jwt.getClaim(LoginClaims.AD_Client_ID.name());
 		int AD_Client_ID = 0;
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			AD_Client_ID = claim.asInt();
 			Env.setContext(Env.getCtx(), Env.AD_CLIENT_ID, AD_Client_ID);				
 		}
 		claim = jwt.getClaim(LoginClaims.AD_User_ID.name());
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			Env.setContext(Env.getCtx(), Env.AD_USER_ID, claim.asInt());
 		}
 		claim = jwt.getClaim(LoginClaims.AD_Role_ID.name());
 		int AD_Role_ID = 0;
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			AD_Role_ID = claim.asInt();
 			Env.setContext(Env.getCtx(), Env.AD_ROLE_ID, AD_Role_ID);				
 		}
 		claim = jwt.getClaim(LoginClaims.AD_Org_ID.name());
 		int AD_Org_ID = 0;
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			AD_Org_ID = claim.asInt();
 			Env.setContext(Env.getCtx(), Env.AD_ORG_ID, AD_Org_ID);				
 		}
 		claim = jwt.getClaim(LoginClaims.M_Warehouse_ID.name());
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			Env.setContext(Env.getCtx(), Env.M_WAREHOUSE_ID, claim.asInt());				
 		}
 		claim = jwt.getClaim(LoginClaims.AD_Language.name());
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			String AD_Language = claim.asString();
 			Env.setContext(Env.getCtx(), Env.LANGUAGE, AD_Language);
 		}
 		claim = jwt.getClaim(LoginClaims.AD_Session_ID.name());
 		int AD_Session_ID = 0;
-		if (!claim.isNull() && !claim.isMissing()) {
+		if (!claim.isNull()) {
 			AD_Session_ID = claim.asInt();
-			Env.setContext(Env.getCtx(), Env.AD_SESSION_ID, AD_Session_ID);
-			MSession session = MSession.get(Env.getCtx());
-			if (session.isProcessed()) {
-				// is possible that the session was finished in a reboot instead of a logout
-				// if there is a REST_AuthToken or a REST_RefreshToken, then the user has not logged out
-				MAuthToken authToken = MAuthToken.get(Env.getCtx(), token);
-				if (authToken != null || MRefreshToken.exists(token)) {
-					DB.executeUpdateEx("UPDATE AD_Session SET Processed='N', UpdatedBy=CreatedBy, Updated=getDate() WHERE AD_Session_ID=?", new Object[] {AD_Session_ID}, null);
-					session.load(session.get_TrxName());
-				} else {
-					requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-				}
-			}
+			Env.setContext(Env.getCtx(), "#AD_Session_ID", AD_Session_ID);
 		}
 		
 		if (AD_Role_ID > 0) {

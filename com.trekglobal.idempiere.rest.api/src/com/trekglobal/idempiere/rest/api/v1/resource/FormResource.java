@@ -32,8 +32,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.trekglobal.idempiere.rest.api.json.QueryOperators;
-
 /**
  * 
  * @author druiz
@@ -49,7 +47,7 @@ public interface FormResource {
 	 * @param filter optional where clause
 	 * @return Json array of forms
 	 */
-	public Response getForms(@QueryParam(QueryOperators.FILTER) String filter);
+	public Response getForms(@QueryParam("$filter") String filter);
 
 }
 
