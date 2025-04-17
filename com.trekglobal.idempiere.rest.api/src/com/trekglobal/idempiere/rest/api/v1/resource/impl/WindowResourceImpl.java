@@ -1261,7 +1261,7 @@ public class WindowResourceImpl implements WindowResource {
 			if (e.isError()) {
 				String msg = e.getAD_Message();
 				if (!Util.isEmpty(msg, true)) {
-					error = Msg.getMsg(Env.getCtx(), msg);
+					error = Msg.getMsg(Env.getCtx(), msg) +": "+ e.getInfo();
 				}
 			}
 		}
