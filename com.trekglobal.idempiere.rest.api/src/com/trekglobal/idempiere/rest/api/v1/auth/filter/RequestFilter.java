@@ -71,6 +71,10 @@ public class RequestFilter implements ContainerRequestFilter {
 		Properties ctx = new Properties();
 		ServerContext.setCurrentInstance(ctx);
 		
+		if (requestContext.getUriInfo().getPath().equals("v1/twilio/receive")) {
+			return;
+		}
+		
 		if (   HttpMethod.OPTIONS.equals(requestContext.getMethod())
 			|| (   HttpMethod.POST.equals(requestContext.getMethod())
 				&& requestContext.getUriInfo().getPath().endsWith("v1/auth/tokens")
