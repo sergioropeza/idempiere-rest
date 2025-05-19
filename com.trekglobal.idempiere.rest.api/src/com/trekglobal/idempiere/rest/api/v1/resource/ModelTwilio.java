@@ -37,8 +37,8 @@ public interface ModelTwilio {
 	
 	@Path("{receive}")
 	@POST
-	@Consumes(MediaType.TEXT_XML)
-	@Produces(MediaType.TEXT_XML)
+	@Consumes(MediaType.TEXT_HTML)
+	@Produces(MediaType.TEXT_HTML)
 	/**
 	 * create new record
 	 * predefine property:
