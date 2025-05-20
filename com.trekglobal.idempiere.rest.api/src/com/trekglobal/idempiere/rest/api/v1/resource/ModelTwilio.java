@@ -37,8 +37,6 @@ public interface ModelTwilio {
 	
 	@Path("{receive}")
 	@POST
-	@Consumes(MediaType.TEXT_HTML)
-	@Produces(MediaType.TEXT_HTML)
 	/**
 	 * create new record
 	 * predefine property:
@@ -47,6 +45,6 @@ public interface ModelTwilio {
 	 * @param jsonText json representation of data to process
 	 * @return json representation of created record
 	 */
-	public Response create(String Text);
+	public Response create(Object Text);
 
 }
