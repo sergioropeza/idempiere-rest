@@ -26,6 +26,7 @@
 package com.trekglobal.idempiere.rest.api.v1.resource;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -35,10 +36,10 @@ import javax.ws.rs.core.Response;
 @Path("v1/twilio")
 public interface ModelTwilio {
 	
-	@Path("{receive}")
 	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XML)
+	@Path("{/receive")
 	/**
 	 * create new record
 	 * predefine property:
@@ -47,6 +48,9 @@ public interface ModelTwilio {
 	 * @param jsonText json representation of data to process
 	 * @return json representation of created record
 	 */
-	public Response create(Object Text);
-
+	public Response handleIncomingMessage(
+            @FormParam("From") String from,
+            @FormParam("Body") String body,
+            @FormParam("To") String to);
+	
 }

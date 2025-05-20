@@ -6,6 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="lib/twilio-10.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/twilio-10.8.0-jar-with-dependencies.jar"/>
 	<classpathentry kind="src" path="src/"/>
 	<classpathentry exported="true" kind="lib" path="lib/java-jwt-3.3.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
