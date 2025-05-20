@@ -37,6 +37,8 @@ public interface ModelTwilio {
 	
 	@Path("{receive}")
 	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_FORM_URLENCODED)
 	/**
 	 * create new record
 	 * predefine property:
