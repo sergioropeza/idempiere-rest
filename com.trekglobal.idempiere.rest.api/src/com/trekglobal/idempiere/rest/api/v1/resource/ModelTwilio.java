@@ -49,8 +49,9 @@ public interface ModelTwilio {
 	 * @return json representation of created record
 	 */
 	public Response handleIncomingMessage(
-            @FormParam("From") String from,
+			@FormParam("From") String from,
             @FormParam("Body") String body,
-            @FormParam("To") String to);
+            @FormParam("To") String to,
+            @FormParam("NumMedia") String numMedia);
 	
 }
