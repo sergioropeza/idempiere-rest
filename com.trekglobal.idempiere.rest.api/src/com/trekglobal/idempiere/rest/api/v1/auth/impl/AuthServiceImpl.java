@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
 			try {
 				String token = builder.sign(Algorithm.HMAC512(TokenUtils.getTokenSecret()));
 				responseNode.addProperty("token", token);
-			} catch (IllegalArgumentException | JWTCreationException e) {
+			} catch (IllegalArgumentException | JWTCreationException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 				return Response.status(Status.BAD_REQUEST).build();
 			}
@@ -330,7 +330,7 @@ public class AuthServiceImpl implements AuthService {
 		try {
 			String token = builder.sign(Algorithm.HMAC512(TokenUtils.getTokenSecret()));
 			responseNode.addProperty("token", token);
-		} catch (IllegalArgumentException | JWTCreationException e) {
+		} catch (IllegalArgumentException | JWTCreationException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return Response.status(Status.BAD_REQUEST).build();
 		}
@@ -442,7 +442,7 @@ public class AuthServiceImpl implements AuthService {
 			JsonObject key = new JsonObject();
 			try {
 				key.addProperty("alg", Algorithm.HMAC512(TokenUtils.getTokenSecret()).getName());
-			} catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 				return Response.status(Status.BAD_REQUEST).build();
 			}
