@@ -33,6 +33,7 @@ import java.util.Properties;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
@@ -54,6 +55,7 @@ import com.trekglobal.idempiere.rest.api.v1.jwt.LoginClaims;
 import com.trekglobal.idempiere.rest.api.v1.jwt.TokenUtils;
 
 @Provider
+@PreMatching
 /**
  * Validate JWT token and set environment context(client,org,user,role and warehouse)
  * @author hengsin
@@ -75,8 +77,15 @@ public class RequestFilter implements ContainerRequestFilter {
 			return;
 		}
 		
-		if (   HttpMethod.OPTIONS.equals(requestContext.getMethod())
-			|| (   HttpMethod.POST.equals(requestContext.getMethod())
+		if (HttpMethod.OPTIONS.equals(requestContext.getMethod())) {
+			// Short-circuit here instead of falling through to JAX-RS routing:
+			// Jersey's default WADL-based OPTIONS handler is broken in this OSGi runtime
+			// (missing com.sun.istack bundle), and returns 500 for every preflight request.
+			requestContext.abortWith(Response.ok().build());
+			return;
+		}
+
+		if (   (   HttpMethod.POST.equals(requestContext.getMethod())
 				&& requestContext.getUriInfo().getPath().endsWith("v1/auth/tokens")
 				)
 			|| (   HttpMethod.GET.equals(requestContext.getMethod())

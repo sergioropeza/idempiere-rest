@@ -36,7 +36,7 @@ import org.adempiere.util.ServerContext;
 
 @Provider
 /**
- * 
+ *
  * @author hengsin
  *
  */
@@ -47,6 +47,13 @@ public class ResponseFilter implements ContainerResponseFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+		String origin = requestContext.getHeaderString("Origin");
+		if (origin != null) {
+			responseContext.getHeaders().putSingle("Access-Control-Allow-Origin", origin);
+			responseContext.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
+			responseContext.getHeaders().putSingle("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+			responseContext.getHeaders().putSingle("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization");
+		}
 		ServerContext.dispose();
 	}
 }
